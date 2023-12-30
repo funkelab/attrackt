@@ -1,0 +1,5 @@
+*.sw[pmno]
+__pycache__
+*.egg-info
+**/donotcommit/
+

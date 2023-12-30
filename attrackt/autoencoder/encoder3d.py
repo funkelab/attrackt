@@ -1,0 +1,136 @@
+from typing import List, Tuple
+
+import torch
+import torch.nn as nn
+
+from attrackt.autoencoder.resnet3d import ResnetBlock3d
+from attrackt.autoencoder.utils import (
+    Downsample3d,
+    make_attention,
+    nonlinearity,
+    normalize,
+)
+
+
+class Encoder3d(nn.Module):
+    def __init__(
+        self,
+        num_in_out_channels: int,
+        num_intermediate_channels: int,
+        num_z_channels: int,
+        num_res_blocks: int,
+        channels_multiply_factor: Tuple[int],
+        start_resolution: int,
+        attention_resolutions: List[int],
+        attention_type: str = "vanilla",
+        kernel_size: int = 3,
+        stride: int = 1,
+        padding: int = 1,
+    ):
+        super().__init__()
+        self.num_intermediate_channels = num_intermediate_channels
+        self.num_resolutions = len(channels_multiply_factor)
+        self.num_res_blocks = num_res_blocks
+        self.start_resolution = start_resolution
+        self.num_in_channels = num_in_out_channels
+
+        # downsampling
+        self.conv_in = torch.nn.Conv3d(
+            in_channels=self.num_in_channels,
+            out_channels=self.num_intermediate_channels,
+            kernel_size=kernel_size,
+            stride=stride,
+            padding=padding,
+            padding_mode="zeros",
+        )
+
+        current_resolution = self.start_resolution  # for example, 64
+        in_channels_multiply_factor = (1,) + tuple(channels_multiply_factor)
+        self.down_module_list = nn.ModuleList()
+        for i_level in range(self.num_resolutions):
+            block = nn.ModuleList()
+            attention = nn.ModuleList()
+            num_in_channels_level = (
+                self.num_intermediate_channels * in_channels_multiply_factor[i_level]
+            )
+            num_out_channels_level = (
+                self.num_intermediate_channels * channels_multiply_factor[i_level]
+            )
+            for i_block in range(self.num_res_blocks):
+                block.append(
+                    ResnetBlock3d(
+                        num_in_channels=num_in_channels_level,
+                        num_out_channels=num_out_channels_level,
+                    )
+                )
+                num_in_channels_level = num_out_channels_level
+                if current_resolution in attention_resolutions:
+                    attention.append(
+                        make_attention(
+                            in_channels=num_in_channels_level,
+                            # attention_type = attention_type,
+                            num_spatial_dims=3,
+                        )
+                    )
+            down_module = nn.Module()
+            down_module.block = block
+            down_module.attention = attention
+            if i_level != self.num_resolutions - 1:
+                down_module.downsample = Downsample3d(num_in_channels_level)
+                current_resolution = current_resolution // 2
+            self.down_module_list.append(down_module)
+
+        # middle
+        self.mid_module = nn.Module()
+        self.mid_module.block_1 = ResnetBlock3d(
+            num_in_channels=num_in_channels_level,
+            num_out_channels=num_in_channels_level,
+        )
+        self.mid_module.attention_1 = make_attention(
+            in_channels=num_in_channels_level,
+            # attention_type = attention_type,
+            num_spatial_dims=3,
+        )
+        self.mid_module.block_2 = ResnetBlock3d(
+            num_in_channels=num_in_channels_level,
+            num_out_channels=num_in_channels_level,
+        )
+
+        # end
+        self.normalize_out = normalize(num_in_channels_level)
+        self.convolution_out = torch.nn.Conv3d(
+            in_channels=num_in_channels_level,
+            out_channels=num_z_channels,
+            kernel_size=kernel_size,
+            stride=stride,
+            padding=padding,
+        )
+
+    def forward(self, x):
+        """
+        x: torch.Tensor (8, 1, 16, 64, 64)
+        """
+        # downsampling
+        hs = [self.conv_in(x)]  # (8, 128, 16, 64, 64)
+
+        for i_level in range(self.num_resolutions):
+            for i_block in range(self.num_res_blocks):
+                h = self.down_module_list[i_level].block[i_block](hs[-1])
+                if len(self.down_module_list[i_level].attention) > 0:
+                    h = self.down_module_list[i_level].attention[i_block](h)
+                hs.append(h)
+            if i_level != self.num_resolutions - 1:
+                hs.append(self.down_module_list[i_level].downsample(hs[-1]))
+
+        # middle
+        h = hs[-1]
+        h = self.mid_module.block_1(h)
+        h = self.mid_module.attention_1(h)
+        h = self.mid_module.block_2(h)
+
+        # end
+        h = self.normalize_out(h)
+        h = nonlinearity(h)
+        h = self.convolution_out(h)  # (8, 4, 1, 4, 4)
+
+        return h

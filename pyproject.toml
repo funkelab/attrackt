@@ -1,0 +1,84 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "attrackt"
+version = "0.1.0"
+description = "Unsupervised Tracking and Interactive Fine-Tuning"
+authors = [
+    { email = "lalitm@janelia.hhmi.org", name = "Manan Lalit" },
+    { email = "funkej@janelia.hhmi.org", name = "Jan Funke" },
+]
+license = { text = "MIT" }
+readme = "README"
+requires-python = ">=3.10"
+
+dependencies = [
+    "numpy",
+    "torch==2.6.0",
+    "motile",
+    "natsort",
+    "jsonargparse",
+    "peft", # model finetuning
+    "motile_toolbox @ git+https://github.com/lmanan/motile_toolbox.git",
+    "traccuracy @ git+https://github.com/Janelia-Trackathon-2023/traccuracy.git@c203772b3c326121c3fdf61f004a70f58f0e89c4", #validate argument introduced later.
+    "gurobipy",
+    "gdown", # for downloading data from google drive,
+    "kornia", # from trackastra,
+    "joblib", # from trackastra,
+    "edt", # from trackastra,
+    "lz4", # from trackastra,
+    "lightning", # from trackastra
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+
+# ---- Ruff Configuration ----
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+fix = true
+show-fixes = true
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]  # Linting, pyflakes, import sorting
+ignore = ["E501"]
+fixable = ["ALL"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
+
+# ---- Mypy Configuration ----
+[tool.mypy]
+python_version = "3.10"
+ignore_missing_imports = true  # Looseness for 3rd-party libs
+strict_optional = true
+warn_unused_configs = true
+check_untyped_defs = true
+
+
+
+# ---- Optional Dev Dependencies ----
+[project.optional-dependencies]
+dev = [
+    "ruff",
+    "pytest",
+    "pytest-mock",
+    "pre-commit",
+    "mypy"
+]
+
+[tool.pytest.ini_options]
+pythonpath = "."
+
+
+
+
+
+
+
