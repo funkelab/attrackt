@@ -1,3 +1,16 @@
+<h2 align="center">Attrackt</h2>
+
+- **[Introduction](#introduction)**
+- **[Installation](#installation)**
+- **[Getting Started](#getting-started)**
+- **[Citation](#citation)**
+- **[Issues](#issues)**
+
+
+## Introduction
+This repository hosts the version of the code used for the **[publication](https://openaccess.thecvf.com/content/ICCV2025W/BIC/html/Lalit_An_Investigation_of_Unsupervised_Cell_Tracking_and_Interactive_Fine-Tuning_ICCVW_2025_paper.html)** titled ***An Investigation of Unsupervised Cell Tracking and Interactive Fine-Tuning***. This work was accepted to the Bio-Image Computing Workshop at the International Conference for Computer Vision (ICCV), 2025.
+
+We refer to the proposed techniques described in the publication as **Attrackt** - Attrackt is a deep learning based method which can be used to link instance segmentations in 2D or 3D microscopy images in an unsupervised fashion i.e. requiring no ground truth labels during training.
 
 
 ## Installation
@@ -45,5 +58,27 @@ conda install -c conda-forge scip
 pip install -e .
 ```
 
+## Getting Started
 
+Try out the examples available **[here](https://funkelab.github.io/attrackt_experiments)**.
+
+## Citation
+
+
+If you find our work useful in your research, please consider citing:
+
+```bibtex
+@InProceedings{Lalit_2025_ICCV,
+    author    = {Lalit, Manan and Funke, Jan},
+    title     = {An Investigation of Unsupervised Cell Tracking and Interactive Fine-Tuning},
+    booktitle = {Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV) Workshops},
+    month     = {October},
+    year      = {2025},
+    pages     = {5792-5800}
+}
+```
+
+## Issues
+
+If you encounter any problems, please **[file an issue](https://github.com/funkelab/attrackt/issues)** along with a description.
 
