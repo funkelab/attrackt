@@ -147,7 +147,7 @@ def create_csv(
             np.array(all_data, dtype=object),
             delimiter=" ",
             header=header_3d,
-            fmt=["%s", "%i", "%i", "%.3f", "%.3f", "%i", "%i"],
+            fmt=["%s", "%i", "%i", "%.3f", "%.3f", "%.3f", "%i", "%i"],
         )
 
     logger.info("CSV creation complete.")
