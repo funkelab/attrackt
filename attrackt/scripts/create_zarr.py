@@ -93,10 +93,17 @@ def create_zarr(
         image_fns = sorted(image_dir.glob("*.tif"))
         mask_fns = sorted(mask_dir.glob("*.tif"))
         if len(image_fns) != len(mask_fns):
-            raise ValueError(
-                f"Sequence '{seq_name}': #images ({len(image_fns)}) "
-                f"!= #masks ({len(mask_fns)})"
+            logger.info(
+                f"Sequence '{seq_name}': #images ({len(image_fns)}) != #masks ({len(mask_fns)})"
             )
+            logger.info(f"Using the first {len(mask_fns)} frames.")
+            # Assume, that masks are only instance-labeled for the first n frames.
+            image_fns = image_fns[: len(mask_fns)]
+
+            # raise ValueError(
+            #    f"Sequence '{seq_name}': #images ({len(image_fns)}) "
+            #    f"!= #masks ({len(mask_fns)})"
+            # )
 
         # Read stacks
         image_list, mask_list = [], []
