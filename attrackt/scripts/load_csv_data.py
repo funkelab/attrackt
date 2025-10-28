@@ -29,6 +29,7 @@ def load_csv_data(
             - Mapping from id to original_id (if available)
             - Reverse mapping from "t_original_id" to id
     """
+
     dtype = [
         ("sequence", "U20"),  # force Unicode string
         ("id", "i4"),
@@ -38,6 +39,8 @@ def load_csv_data(
         ("parent_id", "i4"),
         ("original_id", "i4"),
     ]
+    if len(voxel_size) == 3:
+        dtype.insert(3, ("z", "f8"))
 
     data = np.genfromtxt(
         csv_file_name, delimiter=delimiter, names=True, dtype=dtype, encoding="utf-8"
