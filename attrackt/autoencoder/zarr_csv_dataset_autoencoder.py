@@ -96,7 +96,7 @@ class ZarrCsvDatasetAutoencoder(IterableDataset):
         wi = get_worker_info()
         worker_id = wi.id if wi is not None else 0
         num_workers = wi.num_workers if wi is not None else 1
-        logger.info(f"Worker {worker_id} of {num_workers}.")
+        # logger.info(f"Worker {worker_id} of {num_workers}.")
         rng = np.random.default_rng(seed=(hash((id(self), worker_id)) & 0xFFFFFFFF))
 
         N = len(self.detections_data)
