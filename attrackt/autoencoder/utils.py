@@ -41,7 +41,8 @@ class Upsample(nn.Module):
         )
 
     def forward(self, x):
-        x = torch.nn.functional.interpolate(x, scale_factor=2.0, mode="nearest")
+        # x = torch.nn.functional.interpolate(x, scale_factor=2.0, mode="nearest")
+        x = torch.nn.functional.interpolate(x, scale_factor=2.0, mode="trilinear")
         x = self.conv(x)
         return x
 
