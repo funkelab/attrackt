@@ -100,7 +100,12 @@ class CTCZarrData(Dataset):
                 str(self.embeddings_csv), sequences=[self.zarr_sequence]
             )
             # make (N, 64) float embeddings
-            emb_cols = [f"emb_{i}" for i in range(64)]
+            # emb_cols = [f"emb_{i}" for i in range(64)]
+            emb_cols = [
+                name
+                for name in node_embedding_data.dtype.names
+                if name.startswith("emb_")
+            ]
             emb_matrix = np.column_stack(
                 [node_embedding_data[c] for c in emb_cols]
             ).astype(np.float32)

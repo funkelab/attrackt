@@ -2,7 +2,12 @@ import numpy as np
 
 
 def load_csv_embeddings(node_embedding_file_name, sequences=None):
-    float_fields = [(f"emb_{i}", "f8") for i in range(64)]
+    with open(node_embedding_file_name, "r") as f:
+        header = f.readline().strip().split()
+
+    emb_cols = [h for h in header if h.startswith("emb_")]
+    #d = len(emb_cols)  # embedding dimension
+    float_fields = [(name, "f8") for name in emb_cols]
     dtype = np.dtype([("sequence", "U20"), ("id", "i8"), ("t", "i8")] + float_fields)
 
     node_embedding_data = np.genfromtxt(
@@ -14,7 +19,6 @@ def load_csv_embeddings(node_embedding_file_name, sequences=None):
         autostrip=True,
     )
 
-    # filter rows for chosen sequences
     if sequences is not None:
         node_embedding_data = node_embedding_data[
             np.isin(node_embedding_data["sequence"], sequences)

@@ -6,6 +6,21 @@ from pathlib import Path
 import jsonargparse
 import networkx as nx
 import numpy as np
+from motile import Solver, TrackGraph
+from motile_toolbox.candidate_graph import (
+    EdgeAttr,
+    NodeAttr,
+    get_candidate_graph_from_points_list,
+    graph_to_nx,
+)
+from yaml import safe_load
+
+from attrackt.scripts import (
+    load_csv_associations,
+    load_csv_data,
+    load_csv_embeddings,
+    load_csv_ilp_result,
+)
 from attrackt.scripts.motile.run_traccuracy import compute_metrics
 from attrackt.scripts.motile.saving_utils import save_result
 from attrackt.scripts.motile.utils import (
@@ -22,21 +37,6 @@ from attrackt.scripts.motile.utils import (
     get_recursion_limit,
     log_stats,
     save_ilp_result,
-)
-from motile import Solver, TrackGraph
-from motile_toolbox.candidate_graph import (
-    EdgeAttr,
-    NodeAttr,
-    get_candidate_graph_from_points_list,
-    graph_to_nx,
-)
-from yaml import safe_load
-
-from attrackt.scripts import (
-    load_csv_associations,
-    load_csv_data,
-    load_csv_embeddings,
-    load_csv_ilp_result,
 )
 
 # Setup Logging
@@ -142,9 +142,12 @@ def motile_infer(args):
             node_embedding_data = load_csv_embeddings(
                 node_embedding_file_name, sequence
             )
-
-            # make (N, 64) float embeddings
-            emb_cols = [f"emb_{i}" for i in range(64)]
+            emb_cols = [
+                name
+                for name in node_embedding_data.dtype.names
+                if name.startswith("emb_")
+            ]
+            # emb_cols = [f"emb_{i}" for i in range(64)]
             emb_matrix = np.column_stack(
                 [node_embedding_data[c] for c in emb_cols]
             ).astype(np.float32)
